@@ -88,7 +88,7 @@ new class extends Component
 };
 ?>
 
-<div class="min-h-screen bg-slate-950 text-slate-100">
+<div class="min-h-screen text-slate-100" style="background: linear-gradient(180deg, #0f0b24 0%, #110e34 100%); transition: none !important;">
     <div class="mx-auto flex w-full max-w-4xl flex-col gap-5 px-4 py-10 md:px-6 lg:py-14">
         <div class="rounded-3xl border border-white/10 bg-gradient-to-br from-indigo-900/90 via-slate-900/80 to-black/90 p-5 shadow-2xl backdrop-blur-md md:p-6">
             <div class="flex flex-wrap items-center justify-between gap-3">
@@ -97,13 +97,12 @@ new class extends Component
                     <h1 class="mt-2 text-3xl font-extrabold text-white md:text-4xl">Generate a mini site from a Spotify artist ID</h1>
                     <p class="mt-2 max-w-2xl text-slate-300">Paste a Spotify artist ID and this demo will generate a site preview card with artist metadata and site-ready branding content.</p>
                 </div>
-                <div class="rounded-full border border-white/20 bg-white/10 px-3 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-200">Livewire</div>
             </div>
         </div>
 
         <div class="rounded-3xl border border-indigo-500/30 bg-slate-900/80 p-5 shadow-xl md:p-6">
             <div class="grid gap-5 md:grid-cols-[1.05fr_0.95fr]">
-                <div class="rounded-2xl bg-gradient-to-br from-indigo-500 via-fuchsia-500 to-violet-500 p-5 text-white shadow-lg">
+                <div class="rounded-2xl p-5 text-white shadow-lg always-purple" style="transition: none !important;">
                     <div class="rounded-xl bg-white/10 p-3 text-xs font-semibold uppercase tracking-[0.2em] text-white/90">What this does</div>
                     <h2 class="mt-3 text-2xl font-bold">Generate site content from artist ID</h2>
                     <p class="mt-2 text-sm text-indigo-50/90">This form generates a homepage-style preview with artist name, followers, genres, and a “visit Spotify” CTA.</p>
@@ -129,7 +128,7 @@ new class extends Component
                         @if ($errors->has('artistId'))
                             <p class="text-rose-300 text-sm">{{ $errors->first('artistId') }}</p>
                         @endif
-                        <button type="submit" class="w-full rounded-xl bg-gradient-to-r from-cyan-500 via-indigo-500 to-purple-600 px-4 py-2 text-white font-semibold transition hover:scale-[1.01] hover:shadow-xl">Build site preview</button>
+                        <button type="submit" class="w-full rounded-xl px-4 py-2 text-white font-semibold" style="background: linear-gradient(90deg, #22d3ee 0%, #6366f1 50%, #a855f7 100%); transition: none !important;">Build site preview</button>
                     </form>
 
                     <div wire:loading class="mt-3 rounded-xl border border-cyan-300/30 bg-cyan-500/10 p-3 text-sm text-cyan-100">
