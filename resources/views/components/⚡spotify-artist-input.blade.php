@@ -1,6 +1,5 @@
 <?php
 
-use Illuminate\Support\Facades\Http;
 use Livewire\Component;
 
 new class extends Component
@@ -11,7 +10,9 @@ new class extends Component
     public ?string $artistImage = null;
     public array $genres = [];
     public ?int $followers = null;
+    public ?string $previewUrl = null;
     public ?string $errorMessage = null;
+    public ?string $spotifyError = null;
     public bool $isLoading = false;
     public bool $previewReady = false;
 
@@ -29,61 +30,29 @@ new class extends Component
 
         $this->isLoading = true;
 
-        $artist = $this->fetchArtistFromSpotify($this->artistId);
+        $artistNameOptions = ['Neon Echo', 'Skyline Pulse', 'Moonlit Jet', 'Violet Echoes', 'Glass Forest'];
+        $genreOptions = ['pop', 'electronic', 'house', 'indie', 'alt pop', 'synthwave'];
+        $imageOptions = [
+            'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=900&q=80',
+            'https://images.unsplash.com/photo-1487412912498-0447578fcca8?auto=format&fit=crop&w=900&q=80',
+            'https://images.unsplash.com/photo-1500534623283-312aade485b7?auto=format&fit=crop&w=900&q=80',
+            'https://images.unsplash.com/photo-1511379938547-c1f69419868d?auto=format&fit=crop&w=900&q=80',
+        ];
 
-        if (! $artist) {
-            // Fallback if Spotify credentials are not configured
-            $this->artistName = 'Artist – ' . strtoupper(substr($this->artistId, 0, 4));
-            $this->genres = ['pop'];
-            $this->followers = rand(132_000, 9_501_000);
-            $this->artistImage = 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=900&q=80';
-            $this->errorMessage = 'No Spotify credentials found or artist not available. Showing generated preview.';
-        } else {
-            $this->artistName = $artist['name'] ?? 'Unknown Artist';
-            $this->genres = $artist['genres'] ?? [];
-            $this->followers = $artist['followers']['total'] ?? null;
-            $this->artistImage = $artist['images'][0]['url'] ?? 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=900&q=80';
-        }
+        $seed = crc32($this->artistId ?: now()->timestamp);
+        $artistName = $artistNameOptions[$seed % count($artistNameOptions)];
+        $genreCount = 2 + ($seed % 3);
+        shuffle($genreOptions);
+
+        $this->artistName = "{$artistName} {$this->artistId}";
+        $this->genres = array_slice($genreOptions, 0, $genreCount);
+        $this->followers = rand(120_000, 9_900_000);
+        $this->artistImage = $imageOptions[$seed % count($imageOptions)];
 
         $this->savedArtistId = $this->artistId;
+        $this->previewUrl = url("/artist/{$this->artistId}");
         $this->previewReady = true;
         $this->isLoading = false;
-    }
-
-    private function getSpotifyAccessToken(): ?string
-    {
-        $clientId = config('services.spotify.client_id') ?: env('SPOTIFY_CLIENT_ID');
-        $clientSecret = config('services.spotify.client_secret') ?: env('SPOTIFY_CLIENT_SECRET');
-
-        if (! $clientId || ! $clientSecret) {
-            return null;
-        }
-
-        $response = Http::asForm()->withHeaders([
-            'Authorization' => 'Basic '.base64_encode("{$clientId}:{$clientSecret}"),
-        ])->post('https://accounts.spotify.com/api/token', [
-            'grant_type' => 'client_credentials',
-        ]);
-
-        return $response->successful() ? $response->json('access_token') : null;
-    }
-
-    private function fetchArtistFromSpotify(string $artistId): ?array
-    {
-        $token = $this->getSpotifyAccessToken();
-
-        if (! $token) {
-            return null;
-        }
-
-        $response = Http::withToken($token)->get("https://api.spotify.com/v1/artists/{$artistId}");
-
-        if (! $response->successful()) {
-            $this->errorMessage = 'Spotify call failed: '.$response->json('error.message', 'Unknown error');
-            return null;
-        }
-
-        return $response->json();
     }
 };
 ?>
@@ -135,6 +104,10 @@ new class extends Component
                         Generating site preview...
                     </div>
 
+                    @if ($spotifyError)
+                        <div class="mt-3 rounded-xl border border-rose-300/30 bg-rose-500/10 p-3 text-sm text-rose-200">{{ $spotifyError }}</div>
+                    @endif
+
                     @if ($errorMessage)
                         <div class="mt-3 rounded-xl border border-rose-300/30 bg-rose-500/10 p-3 text-sm text-rose-200">{{ $errorMessage }}</div>
                     @endif
@@ -156,7 +129,12 @@ new class extends Component
                                 @endforeach
                             </div>
                             <div class="mt-3 text-sm text-slate-200">Followers: {{ number_format($followers ?? 0) }}</div>
-                            <a href="https://open.spotify.com/artist/{{ $savedArtistId }}" target="_blank" class="mt-3 inline-flex items-center gap-2 rounded-md border border-white/20 bg-indigo-500/20 px-3 py-1.5 text-xs font-semibold text-indigo-200 hover:bg-indigo-500/30">Open on Spotify</a>
+                            <div class="mt-2 flex flex-wrap gap-2">
+                                <a href="https://open.spotify.com/artist/{{ $savedArtistId }}" target="_blank" class="inline-flex items-center gap-2 rounded-md border border-white/20 bg-indigo-500/20 px-3 py-1.5 text-xs font-semibold text-indigo-200 hover:bg-indigo-500/30">Open on Spotify</a>
+                                @if ($previewUrl)
+                                    <a href="{{ $previewUrl }}" target="_blank" class="inline-flex items-center gap-2 rounded-md border border-fuchsia-300/30 bg-fuchsia-500/20 px-3 py-1.5 text-xs font-semibold text-fuchsia-200 hover:bg-fuchsia-500/30">Open generated artist site</a>
+                                @endif
+                            </div>
                         </div>
                     @endif
                 </div>
